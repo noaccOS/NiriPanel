@@ -12,15 +12,15 @@ import { Notification } from 'types/service/notifications.js';
 import Window from 'types/widgets/window.js';
 import Box from 'types/widgets/box.js';
 import { Attribute, Child } from 'src/lib/types/widget.js';
-const hyprland = await Service.import('hyprland');
+const niri = await Service.import('niri');
 
 const { position, timeout, cache_actions, monitor, active_monitor, displayedTotal, ignore, showActionsOnHover } =
     options.notifications;
 
 const curMonitor = Variable(monitor.value);
 
-hyprland.active.connect('changed', () => {
-    curMonitor.value = hyprland.active.monitor.id;
+niri.active.connect('changed', () => {
+    curMonitor.value = niri.active.monitor.id;
 });
 
 export default (): Window<Box<Child, Attribute>, unknown> => {

@@ -1,30 +1,40 @@
 {
-  description = "A Bar/Panel for Hyprland with extensive customizability.";
+  description = "A Bar/Panel for Niri with extensive customizability.";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    ags.url = "github:Aylur/ags";
+    nixpkgs.url = "github:nixos/nixpkgs/staging-next";
+    ags = {
+      url = "github:Aylur/ags";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.astal = {
+        url = "github:sameoldlab/astal?ref=feat/niri";
+        inputs.nixpkgs.follows = "nixpkgs";
+      };
+    };
   };
 
-  outputs = inputs: let
-    systems = [
-      "x86_64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-      "aarch64-linux"
-    ];
-    forEachSystem = inputs.nixpkgs.lib.genAttrs systems;
-    pkgsFor = forEachSystem (
-      system:
+  outputs =
+    inputs:
+    let
+      systems = [
+        "x86_64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+        "aarch64-linux"
+      ];
+      forEachSystem = inputs.nixpkgs.lib.genAttrs systems;
+      pkgsFor = forEachSystem (
+        system:
         import inputs.nixpkgs {
           inherit system;
           config.allowUnfree = true;
         }
-    );
+      );
 
-    devShellFor = system:
-      inputs.nixpkgs.lib.genAttrs ["default"] (
-        _:
+      devShellFor =
+        system:
+        inputs.nixpkgs.lib.genAttrs [ "default" ] (
+          _:
           inputs.nixpkgs.legacyPackages.${system}.mkShell {
             buildInputs = [
               pkgsFor.${system}.esbuild
@@ -46,7 +56,7 @@
               pkgsFor.${system}.gnome-bluetooth
               pkgsFor.${system}.python3
               pkgsFor.${system}.matugen
-              inputs.ags.packages.${system}.agsWithTypes
+              inputs.ags.packages.${system}.agsFull
             ];
             nativeBuildInputs = with pkgsFor.${system}; [
               nixfmt-rfc-style
@@ -57,22 +67,26 @@
               export GI_TYPELIB_PATH=${pkgsFor.${system}.libgtop}/lib/girepository-1.0:${pkgsFor.${system}.glib}/lib/girepository-1.0:$GI_TYPELIB_PATH
             '';
           }
-      );
-  in {
-    devShells = forEachSystem devShellFor;
+        );
+    in
+    {
+      devShells = forEachSystem devShellFor;
 
-    overlay = final: prev: {
-      hyprpanel =
-        if final ? callPackage
-        then (final.callPackage ./nix {inherit inputs;}).desktop.script
-        else inputs.self.packages.${prev.stdenv.system}.default;
+      overlay = final: prev: {
+        niripanel =
+          if final ? callPackage then
+            (final.callPackage ./nix { inherit inputs; }).desktop.script
+          else
+            inputs.self.packages.${prev.stdenv.system}.default;
+      };
+      packages = forEachSystem (
+        system:
+        let
+          pkgs = pkgsFor.${system};
+        in
+        {
+          default = (pkgs.callPackage ./nix { inherit inputs; }).desktop.script;
+        }
+      );
     };
-    packages = forEachSystem (
-      system: let
-        pkgs = pkgsFor.${system};
-      in {
-        default = (pkgs.callPackage ./nix {inherit inputs;}).desktop.script;
-      }
-    );
-  };
 }

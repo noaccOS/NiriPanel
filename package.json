@@ -1,7 +1,7 @@
 {
-    "name": "hyprpanel",
+    "name": "niripanel",
     "version": "1.0.0",
-    "description": "A customizable panel built for Hyprland.",
+    "description": "A customizable panel built for Niri.",
     "main": "config.js",
     "directories": {
         "lib": "lib"

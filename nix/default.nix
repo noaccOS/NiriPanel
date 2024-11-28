@@ -21,14 +21,13 @@
   swww,
   python3,
   libgtop,
-  gobject-introspection,
   glib,
 }: let
   ags = inputs.ags.packages.${system}.default.override {
     extraPackages = [accountsservice];
   };
 
-  pname = "hyprpanel";
+  pname = "niripanel";
   config = stdenv.mkDerivation {
     inherit pname;
     version = "latest";
@@ -58,7 +57,7 @@ in {
     script = writeShellScriptBin pname ''
       export PATH=$PATH:${lib.makeBinPath [dart-sass fd btop pipewire bluez bluez-tools networkmanager matugen swww grimblast gpu-screen-recorder brightnessctl pkgs.gnome-bluetooth python3]}
       export GI_TYPELIB_PATH=${libgtop}/lib/girepository-1.0:${glib}/lib/girepository-1.0:$GI_TYPELIB_PATH
-      ${ags}/bin/ags -b hyprpanel -c ${config}/config.js $@
+      ${ags}/bin/ags -b niripanel -c ${config}/config.js $@
     '';
   };
 }
